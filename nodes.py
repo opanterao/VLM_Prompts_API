@@ -236,13 +236,7 @@ class VLMImageToVideoPrompt:
                 "model_name": ("STRING", {"default": "huayuvl"}),
                 "api_key": ("STRING", {"default": "", "multiline": False}),
                 "system_prompt": ("STRING", {"default": "", "multiline": True}),
-                "user_prompt": (
-                    "STRING",
-                    {
-                        "default": "请详细描述这些图片的细节，包括主体、背景、光线、色彩、氛围、构图等，并生成视频提示词。",
-                        "multiline": True,
-                    },
-                ),
+                "user_prompt": ("STRING", {"default": "", "multiline": True}),
                 "temperature": (
                     "FLOAT",
                     {"default": 0.7, "min": 0.0, "max": 2.0, "step": 0.1},
@@ -350,13 +344,7 @@ class VLMSingleImagePrompt:
                 "model_name": ("STRING", {"default": "huayuvl"}),
                 "api_key": ("STRING", {"default": "", "multiline": False}),
                 "system_prompt": ("STRING", {"default": "", "multiline": True}),
-                "prompt": (
-                    "STRING",
-                    {
-                        "default": "请详细描述这张图片的所有细节，包括主体、背景、光线、色彩、氛围、构图等",
-                        "multiline": True,
-                    },
-                ),
+                "prompt": ("STRING", {"default": "", "multiline": True}),
                 "temperature": (
                     "FLOAT",
                     {"default": 0.7, "min": 0.0, "max": 2.0, "step": 0.1},

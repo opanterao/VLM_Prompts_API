@@ -203,21 +203,14 @@ class VLMImageToVideoPrompt:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "api_url": ("STRING", {"default": "http://localhost:8000"}),
-                "model_name": ("STRING", {"default": "Qwen2-VL-72B-Instruct"}),
+                "api_url": ("STRING", {"default": "http://192.168.1.101:30006"}),
+                "model_name": ("STRING", {"default": "huayuvl"}),
                 "api_key": ("STRING", {"default": "", "multiline": False}),
                 "system_prompt": ("STRING", {"default": "", "multiline": True}),
-                "image_prompt": (
+                "user_prompt": (
                     "STRING",
                     {
-                        "default": "请仔细描述这张图片的所有细节，包括：主体、背景、光线、色彩、氛围、构图等。请用简洁的中文描述，50-100字。",
-                        "multiline": True,
-                    },
-                ),
-                "video_prompt": (
-                    "STRING",
-                    {
-                        "default": "请根据以下多张图片的顺序，写出一个连续的视频镜头脚本。要求：1）保持画面之间的连续性和逻辑性；2）添加合理的镜头运动描述；3）描述画面之间的过渡效果。请用中文输出。",
+                        "default": "请详细描述这些图片的细节，包括主体、背景、光线、色彩、氛围、构图等，并生成视频提示词。",
                         "multiline": True,
                     },
                 ),
@@ -252,8 +245,7 @@ class VLMImageToVideoPrompt:
         model_name,
         api_key,
         system_prompt,
-        image_prompt,
-        video_prompt,
+        user_prompt,
         temperature,
         max_tokens,
         image1=None,
@@ -279,10 +271,10 @@ class VLMImageToVideoPrompt:
             return ("请输入模型名称", "", "")
 
         sys_prompt = system_prompt if system_prompt else None
-        img_prompt = (
-            image_prompt
-            if image_prompt
-            else "请仔细描述这张图片的所有细节，包括：主体、背景、光线、色彩、氛围、构图等。请用简洁的中文描述，50-100字。"
+        usr_prompt = (
+            user_prompt
+            if user_prompt
+            else "请详细描述这些图片的细节，并生成视频提示词。"
         )
 
         image_prompts = []
@@ -294,7 +286,7 @@ class VLMImageToVideoPrompt:
                     model_name,
                     api_key,
                     [img],
-                    img_prompt,
+                    usr_prompt,
                     temperature,
                     max_tokens,
                     sys_prompt,
@@ -305,19 +297,13 @@ class VLMImageToVideoPrompt:
 
         image_prompts_str = "\n".join(image_prompts)
 
-        vid_prompt = (
-            video_prompt
-            if video_prompt
-            else "请根据以下多张图片的顺序，写出一个连续的视频镜头脚本。要求：1）保持画面之间的连续性和逻辑性；2）添加合理的镜头运动描述；3）描述画面之间的过渡效果。请用中文输出。"
-        )
-
         try:
             video_result = call_vlm_api(
                 api_url,
                 model_name,
                 api_key,
                 images,
-                f"{vid_prompt}\n\n图片顺序：\n{image_prompts_str}",
+                f"请根据以下图片分析结果，写出视频提示词。\n\n{image_prompts_str}",
                 temperature,
                 max_tokens,
                 sys_prompt,
@@ -362,13 +348,16 @@ class VLMSingleImagePrompt:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "api_url": ("STRING", {"default": "http://localhost:8000"}),
-                "model_name": ("STRING", {"default": "Qwen2-VL-72B-Instruct"}),
+                "api_url": ("STRING", {"default": "http://192.168.1.101:30006"}),
+                "model_name": ("STRING", {"default": "huayuvl"}),
                 "api_key": ("STRING", {"default": "", "multiline": False}),
                 "system_prompt": ("STRING", {"default": "", "multiline": True}),
                 "prompt": (
                     "STRING",
-                    {"default": "请详细描述这张图片的所有细节", "multiline": True},
+                    {
+                        "default": "请详细描述这张图片的所有细节，包括主体、背景、光线、色彩、氛围、构图等",
+                        "multiline": True,
+                    },
                 ),
                 "temperature": (
                     "FLOAT",
@@ -441,8 +430,8 @@ class VideoPromptEnhancer:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "api_url": ("STRING", {"default": "http://localhost:8000"}),
-                "model_name": ("STRING", {"default": "Qwen2-VL-72B-Instruct"}),
+                "api_url": ("STRING", {"default": "http://192.168.1.101:30006"}),
+                "model_name": ("STRING", {"default": "huayuvl"}),
                 "api_key": ("STRING", {"default": "", "multiline": False}),
                 "system_prompt": ("STRING", {"default": "", "multiline": True}),
                 "prompts": ("STRING", {"multiline": True}),

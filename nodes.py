@@ -16,8 +16,14 @@ NODE_CLASS_MAPPINGS = {}
 NODE_DISPLAY_NAME_MAPPINGS = {}
 
 
-def pil2base64(img):
-    """Convert PIL Image to base64 string"""
+def pil2base64(img, max_size=2048):
+    """Convert PIL Image to base64 string with optional resize"""
+    if max_size and (img.width > max_size or img.height > max_size):
+        ratio = min(max_size / img.width, max_size / img.height)
+        new_width = int(img.width * ratio)
+        new_height = int(img.height * ratio)
+        img = img.resize((new_width, new_height), Image.LANCZOS)
+
     buffered = BytesIO()
     img.save(buffered, format="PNG")
     return base64.b64encode(buffered.getvalue()).decode("utf-8")
@@ -77,6 +83,7 @@ def call_vlm_api(
     max_tokens=2048,
     system_prompt=None,
     seed=0,
+    max_size=2048,
 ):
     """Call vLLM API for vision language model inference"""
     if not validate_url(api_url):
@@ -93,7 +100,9 @@ def call_vlm_api(
                 pil_img = tensor_to_pil(img)
             else:
                 pil_img = img
-            image_contents.append(f"data:image/png;base64,{pil2base64(pil_img)}")
+            image_contents.append(
+                f"data:image/png;base64,{pil2base64(pil_img, max_size)}"
+            )
         except Exception as e:
             raise ValueError(f"图像转换失败: {e}")
 
@@ -238,6 +247,10 @@ class VLMImageToVideoPrompt:
                     "FLOAT",
                     {"default": 0.7, "min": 0.0, "max": 2.0, "step": 0.1},
                 ),
+                "max_size": (
+                    "INT",
+                    {"default": 2048, "min": 512, "max": 4096, "step": 256},
+                ),
                 "seed": (
                     "INT",
                     {"default": 0, "min": 0, "max": 2147483647, "step": 1},
@@ -271,6 +284,7 @@ class VLMImageToVideoPrompt:
         system_prompt,
         user_prompt,
         temperature,
+        max_size,
         seed,
         max_tokens,
         image1=None,
@@ -311,6 +325,7 @@ class VLMImageToVideoPrompt:
                 max_tokens,
                 sys_prompt,
                 seed,
+                max_size,
             )
             return (result,)
         except Exception as e:
@@ -346,6 +361,10 @@ class VLMSingleImagePrompt:
                     "FLOAT",
                     {"default": 0.7, "min": 0.0, "max": 2.0, "step": 0.1},
                 ),
+                "max_size": (
+                    "INT",
+                    {"default": 2048, "min": 512, "max": 4096, "step": 256},
+                ),
                 "seed": (
                     "INT",
                     {"default": 0, "min": 0, "max": 2147483647, "step": 1},
@@ -373,6 +392,7 @@ class VLMSingleImagePrompt:
         system_prompt,
         prompt,
         temperature,
+        max_size,
         seed,
         max_tokens,
         image=None,
@@ -399,6 +419,7 @@ class VLMSingleImagePrompt:
                 max_tokens,
                 sys_prompt,
                 seed,
+                max_size,
             )
             return (result,)
         except Exception as e:

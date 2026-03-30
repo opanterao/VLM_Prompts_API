@@ -76,6 +76,7 @@ def call_vlm_api(
     temperature=0.7,
     max_tokens=2048,
     system_prompt=None,
+    seed=0,
 ):
     """Call vLLM API for vision language model inference"""
     if not validate_url(api_url):
@@ -121,6 +122,9 @@ def call_vlm_api(
         "temperature": temperature,
         "max_tokens": max_tokens,
     }
+
+    if seed > 0:
+        payload["seed"] = seed
 
     try:
         response = requests.post(
@@ -234,6 +238,10 @@ class VLMImageToVideoPrompt:
                     "FLOAT",
                     {"default": 0.7, "min": 0.0, "max": 2.0, "step": 0.1},
                 ),
+                "seed": (
+                    "INT",
+                    {"default": 0, "min": 0, "max": 2147483647, "step": 1},
+                ),
                 "max_tokens": (
                     "INT",
                     {"default": 65536, "min": 128, "max": 32768, "step": 1},
@@ -263,6 +271,7 @@ class VLMImageToVideoPrompt:
         system_prompt,
         user_prompt,
         temperature,
+        seed,
         max_tokens,
         image1=None,
         image2=None,
@@ -273,7 +282,7 @@ class VLMImageToVideoPrompt:
     ):
 
         if not validate_url(api_url):
-            return ("API地址格式无效，请输入以 http:// 或 https:// 开头的地址", "", "")
+            return ("API地址格式无效，请输入以 http:// 或 https:// 开头的地址",)
 
         images = []
         for img in [image1, image2, image3, image4, image5, image6]:
@@ -284,7 +293,7 @@ class VLMImageToVideoPrompt:
             return ("请至少输入一张图片", "", "")
 
         if not model_name:
-            return ("请输入模型名称", "", "")
+            return ("请输入模型名称",)
 
         sys_prompt = system_prompt if system_prompt else None
         usr_prompt = (
@@ -306,6 +315,7 @@ class VLMImageToVideoPrompt:
                     temperature,
                     max_tokens,
                     sys_prompt,
+                    seed,
                 )
                 image_prompts.append(f"图片{i + 1}: {prompt}")
             except Exception as e:
@@ -323,6 +333,7 @@ class VLMImageToVideoPrompt:
                 temperature,
                 max_tokens,
                 sys_prompt,
+                seed,
             )
             video_prompts_continuous = video_result
         except Exception as e:
@@ -381,6 +392,10 @@ class VLMSingleImagePrompt:
                     "FLOAT",
                     {"default": 0.7, "min": 0.0, "max": 2.0, "step": 0.1},
                 ),
+                "seed": (
+                    "INT",
+                    {"default": 0, "min": 0, "max": 2147483647, "step": 1},
+                ),
                 "max_tokens": (
                     "INT",
                     {"default": 65536, "min": 128, "max": 32768, "step": 1},
@@ -404,6 +419,7 @@ class VLMSingleImagePrompt:
         system_prompt,
         prompt,
         temperature,
+        seed,
         max_tokens,
         image=None,
     ):
@@ -428,6 +444,7 @@ class VLMSingleImagePrompt:
                 temperature,
                 max_tokens,
                 sys_prompt,
+                seed,
             )
             return (result,)
         except Exception as e:
@@ -460,6 +477,10 @@ class VideoPromptEnhancer:
                     "FLOAT",
                     {"default": 0.7, "min": 0.0, "max": 2.0, "step": 0.1},
                 ),
+                "seed": (
+                    "INT",
+                    {"default": 0, "min": 0, "max": 2147483647, "step": 1},
+                ),
                 "max_tokens": (
                     "INT",
                     {"default": 65536, "min": 128, "max": 32768, "step": 1},
@@ -481,6 +502,7 @@ class VideoPromptEnhancer:
         prompts,
         enhance_type,
         temperature,
+        seed,
         max_tokens,
     ):
         if not validate_url(api_url):
@@ -509,6 +531,7 @@ class VideoPromptEnhancer:
                 temperature,
                 max_tokens,
                 sys_prompt,
+                seed,
             )
             return (result,)
         except Exception as e:

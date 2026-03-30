@@ -128,9 +128,17 @@ def call_vlm_api(
         )
         response.raise_for_status()
         result = response.json()
-        content = result["choices"][0]["message"]["content"]
+        message = result["choices"][0]["message"]
+        content = message.get("content")
+
         if content is None or content == "":
-            raise ValueError("API 返回内容为空，可能由于系统提示词过长或格式问题导致")
+            reasoning = message.get("reasoning", "")
+            if reasoning:
+                raise ValueError(
+                    f"API 返回内容为空，但有 reasoning 输出。可能原因：\n1. 系统提示词过长，建议缩短\n2. 模型正在处理复杂任务，请尝试简化提示词\n3. max_tokens 不够，请增大"
+                )
+            raise ValueError("API 返回内容为空，请检查请求参数")
+
         return content
     except requests.exceptions.ConnectionError:
         raise ConnectionError(f"无法连接到API服务: {api_url}，请检查服务是否启动")

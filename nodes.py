@@ -236,7 +236,7 @@ class VLMImageToVideoPrompt:
                 ),
                 "max_tokens": (
                     "INT",
-                    {"default": 2048, "min": 128, "max": 8192, "step": 1},
+                    {"default": 65536, "min": 128, "max": 131072, "step": 1},
                 ),
             },
             "optional": {
@@ -381,7 +381,7 @@ class VLMSingleImagePrompt:
                 ),
                 "max_tokens": (
                     "INT",
-                    {"default": 2048, "min": 128, "max": 8192, "step": 1},
+                    {"default": 65536, "min": 128, "max": 131072, "step": 1},
                 ),
             },
             "optional": {
@@ -460,7 +460,7 @@ class VideoPromptEnhancer:
                 ),
                 "max_tokens": (
                     "INT",
-                    {"default": 2048, "min": 128, "max": 8192, "step": 1},
+                    {"default": 65536, "min": 128, "max": 131072, "step": 1},
                 ),
             }
         }

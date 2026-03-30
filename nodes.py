@@ -290,77 +290,31 @@ class VLMImageToVideoPrompt:
                 images.append(img)
 
         if not images:
-            return ("请至少输入一张图片", "", "")
+            return ("请至少输入一张图片",)
 
         if not model_name:
             return ("请输入模型名称",)
 
-        sys_prompt = system_prompt if system_prompt else None
-        usr_prompt = (
-            user_prompt
-            if user_prompt
-            else "请详细描述这些图片的细节，并生成视频提示词。"
-        )
+        if not user_prompt:
+            return ("请输入用户提示词",)
 
-        image_prompts = []
-
-        for i, img in enumerate(images):
-            try:
-                prompt = call_vlm_api(
-                    api_url,
-                    model_name,
-                    api_key,
-                    [img],
-                    usr_prompt,
-                    temperature,
-                    max_tokens,
-                    sys_prompt,
-                    seed,
-                )
-                image_prompts.append(f"图片{i + 1}: {prompt}")
-            except Exception as e:
-                image_prompts.append(f"图片{i + 1}: [识别失败 - {str(e)}]")
-
-        image_prompts_str = "\n".join(image_prompts)
+        sys_prompt = system_prompt if system_prompt.strip() else None
 
         try:
-            video_result = call_vlm_api(
+            result = call_vlm_api(
                 api_url,
                 model_name,
                 api_key,
                 images,
-                f"请根据以下图片分析结果，写出视频提示词。\n\n{image_prompts_str}",
+                user_prompt,
                 temperature,
                 max_tokens,
                 sys_prompt,
                 seed,
             )
-            video_prompts_continuous = video_result
+            return (result,)
         except Exception as e:
-            successful_prompts = [
-                p.split(": ", 1)[1] if ": " in p else p
-                for p in image_prompts
-                if "[识别失败" not in p
-            ]
-            if successful_prompts:
-                video_prompts_continuous = generate_continuous_prompts(
-                    successful_prompts
-                )
-            else:
-                video_prompts_continuous = f"[生成失败: {str(e)}]"
-
-        video_prompts_split = generate_split_prompts(
-            [
-                p.split(": ", 1)[1] if ": " in p else p
-                for p in image_prompts
-                if "[识别失败" not in p
-            ],
-            len(images),
-        )
-
-        result = f"【图片分析】\n{image_prompts_str}\n\n【分镜头提示词】\n{video_prompts_split}\n\n【连续镜头提示词】\n{video_prompts_continuous}"
-
-        return (result,)
+            return (f"错误: {str(e)}",)
 
 
 NODE_CLASS_MAPPINGS["VLMImageToVideoPrompt"] = VLMImageToVideoPrompt

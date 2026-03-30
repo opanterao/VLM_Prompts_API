@@ -236,7 +236,7 @@ class VLMImageToVideoPrompt:
                 ),
                 "max_tokens": (
                     "INT",
-                    {"default": 65536, "min": 128, "max": 131072, "step": 1},
+                    {"default": 65536, "min": 128, "max": 32768, "step": 1},
                 ),
             },
             "optional": {
@@ -249,8 +249,8 @@ class VLMImageToVideoPrompt:
             },
         }
 
-    RETURN_TYPES = ("STRING", "STRING", "STRING")
-    RETURN_NAMES = ("image_prompts", "video_prompts_split", "video_prompts_continuous")
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("result",)
     FUNCTION = "generate_prompts"
     CATEGORY = "VLMVideo"
     DESCRIPTION = "使用VLM模型反推图像提示词并生成视频提示词"
@@ -347,7 +347,9 @@ class VLMImageToVideoPrompt:
             len(images),
         )
 
-        return (image_prompts_str, video_prompts_split, video_prompts_continuous)
+        result = f"【图片分析】\n{image_prompts_str}\n\n【分镜头提示词】\n{video_prompts_split}\n\n【连续镜头提示词】\n{video_prompts_continuous}"
+
+        return (result,)
 
 
 NODE_CLASS_MAPPINGS["VLMImageToVideoPrompt"] = VLMImageToVideoPrompt
@@ -381,7 +383,7 @@ class VLMSingleImagePrompt:
                 ),
                 "max_tokens": (
                     "INT",
-                    {"default": 65536, "min": 128, "max": 131072, "step": 1},
+                    {"default": 65536, "min": 128, "max": 32768, "step": 1},
                 ),
             },
             "optional": {
@@ -460,7 +462,7 @@ class VideoPromptEnhancer:
                 ),
                 "max_tokens": (
                     "INT",
-                    {"default": 65536, "min": 128, "max": 131072, "step": 1},
+                    {"default": 65536, "min": 128, "max": 32768, "step": 1},
                 ),
             }
         }

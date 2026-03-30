@@ -97,8 +97,11 @@ def call_vlm_api(
             raise ValueError(f"图像转换失败: {e}")
 
     messages = []
-    if system_prompt:
-        messages.append({"role": "system", "content": system_prompt})
+    if system_prompt and system_prompt.strip():
+        try:
+            messages.append({"role": "system", "content": str(system_prompt)})
+        except Exception as e:
+            raise ValueError(f"系统提示词处理失败: {e}")
 
     user_content = []
     if image_contents:
@@ -125,11 +128,16 @@ def call_vlm_api(
         )
         response.raise_for_status()
         result = response.json()
-        return result["choices"][0]["message"]["content"]
+        content = result["choices"][0]["message"]["content"]
+        if content is None or content == "":
+            raise ValueError("API 返回内容为空，可能由于系统提示词过长或格式问题导致")
+        return content
     except requests.exceptions.ConnectionError:
         raise ConnectionError(f"无法连接到API服务: {api_url}，请检查服务是否启动")
     except requests.exceptions.Timeout:
         raise TimeoutError("API请求超时，请检查网络连接或增加超时时间")
+    except ValueError:
+        raise
     except Exception as e:
         raise RuntimeError(f"API调用失败: {e}")
 
